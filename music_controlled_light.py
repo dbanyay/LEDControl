@@ -6,6 +6,7 @@ from time import perf_counter
 import colorsys
 from scipy.signal import spectrogram
 from matplotlib import pyplot as plt
+from collections import deque
 
 def int_to_hex(nr):
   h = format(int(nr), 'x')
@@ -14,21 +15,18 @@ def int_to_hex(nr):
 def calculate_hls(cur_segment,fs,nperseg):
     f, t, Sxx = spectrogram(cur_segment, fs=fs, nperseg=nperseg)
     calculated_hue = logarithmic_mapping(Sxx,f)
+    hue_deque.appendleft(calculated_hue)
 
     rms = np.mean(np.abs(cur_segment))
     alpha = rms / 8 if rms / 8 < 1000 else 1000
+    alpha_deque.appendleft(alpha)
 
-    hue_hex = int_to_hex(calculated_hue).zfill(4)
-
-    print(f"hue: {calculated_hue}, hue hex: {hue_hex} alpha: {alpha}")
-
-
-    light_hex = int_to_hex(alpha).zfill(4)
+    hue_hex = int_to_hex(int(np.mean(hue_deque))).zfill(4)
+    alpha_hex = int_to_hex(int(np.mean(alpha_deque))).zfill(4)
     saturation_hex = int_to_hex(1000).zfill(4)
-    message = hue_hex + saturation_hex  + light_hex
+    message = hue_hex + saturation_hex  + alpha_hex
 
-    print(f'message: {message}')
-
+    print(f"hue: {calculated_hue}, hue mean: {int(np.mean(hue_deque))} alpha: {alpha} alpha mean: {int(np.mean(alpha_deque))}")
 
     return message
 
@@ -61,9 +59,10 @@ def read_audio():
 # Setup channel info
 FORMAT = pyaudio.paInt16  # data type format
 CHANNELS = 1  # Adjust to your number of channels
-RATE = 16000 # Sample Rate
+RATE = 44100 # Sample Rate
 CHUNK = 256 # Block Size
-NUM_COLORS =  150 # range from 0 to NUM_COLORS
+NUM_COLORS =  120 # range from 0 to NUM_COLORS
+DEQUE_MAXLEN = 8
 
 # Startup pyaudio instance
 audio = pyaudio.PyAudio()
@@ -75,7 +74,8 @@ stream = audio.open(format=FORMAT, channels=CHANNELS,
 
 print(f"latency: {stream.get_input_latency()}")
 
-hue_hex = ""
+hue_deque = deque([0 for _ in range(DEQUE_MAXLEN)], maxlen=DEQUE_MAXLEN)
+alpha_deque = deque([0 for _ in range(DEQUE_MAXLEN)], maxlen=DEQUE_MAXLEN)
 
 start_server = websockets.serve(send_color, "localhost", 5000)
 # start_server = websockets.serve(timing, "localhost", 5000)

@@ -78,7 +78,7 @@ ws.on('message', function incoming(data) {
             device.set({dps: immediate_color, set: data});
             startTime = Date.now();
             // console.log(data);
-            // console.log(cntr);
+            console.log(cntr);
             cntr = 0;
         }
         else {
