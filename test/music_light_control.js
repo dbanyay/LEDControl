@@ -69,14 +69,20 @@ device.on('data', data => {
 const minEllapsedTime = 50;
 
 let startTime = Date.now();
+let cntr = 0;
 
 ws.on('message', function incoming(data) {
     // console.log(data);
     if (deviceConnected) {
         if ((Date.now() - startTime) >= minEllapsedTime) {
             device.set({dps: immediate_color, set: data});
+            startTime = Date.now();
             // console.log(data);
-            startTime = Date.now()
+            // console.log(cntr);
+            cntr = 0;
+        }
+        else {
+            cntr = cntr + 1;
         }
     }
 });
