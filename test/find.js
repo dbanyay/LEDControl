@@ -5,8 +5,8 @@ import delay from 'delay';
 
 const TuyAPI = require('..');
 
-const stub = new TuyaStub({id: '22325186db4a2217dc8e',
-                           key: '4226aa407d5c1e2b',
+const stub = new TuyaStub({id: '16537702cc50e3ede3e2',
+                           key: '04dd213671a8e074',
                            state: {1: false, 2: true}});
 
 // You may notice that at the end of each test
@@ -17,8 +17,8 @@ const stub = new TuyaStub({id: '22325186db4a2217dc8e',
 // following test, skewing the results.
 
 test.serial('find device on network using deprecated resolveId', async t => {
-  const stubDevice = new TuyAPI({id: '22325186db4a2217dc8e',
-                                 key: '4226aa407d5c1e2b'});
+  const stubDevice = new TuyAPI({id: '16537702cc50e3ede3e2',
+                                 key: '04dd213671a8e074'});
   const thisStub = clone(stub);
   thisStub.startServer();
 
@@ -35,8 +35,8 @@ test.serial('find device on network using deprecated resolveId', async t => {
 });
 
 test.serial('find device on network by ID', async t => {
-  const stubDevice = new TuyAPI({id: '22325186db4a2217dc8e',
-                                 key: '4226aa407d5c1e2b'});
+  const stubDevice = new TuyAPI({id: '16537702cc50e3ede3e2',
+                                 key: '04dd213671a8e074'});
   const thisStub = clone(stub);
   thisStub.startServer();
 
@@ -54,7 +54,7 @@ test.serial('find device on network by ID', async t => {
 
 test.serial('find device on network by IP', async t => {
   const stubDevice = new TuyAPI({ip: 'localhost',
-                                 key: '4226aa407d5c1e2b'});
+                                 key: '04dd213671a8e074'});
   const thisStub = clone(stub);
   thisStub.startServer();
 
@@ -72,8 +72,8 @@ test.serial('find device on network by IP', async t => {
 
 test.serial('find returns if both ID and IP are already set', async t => {
   const stubDevice = new TuyAPI({ip: 'localhost',
-                                 id: '22325186db4a2217dc8e',
-                                 key: '4226aa407d5c1e2b'});
+                                 id: '16537702cc50e3ede3e2',
+                                 key: '04dd213671a8e074'});
   const thisStub = clone(stub);
   thisStub.startServer();
 
@@ -90,8 +90,8 @@ test.serial('find returns if both ID and IP are already set', async t => {
 });
 
 test.serial('find throws timeout error', async t => {
-  const stubDevice = new TuyAPI({id: '22325186db4a2217dc8e',
-                                 key: '4226aa407d5c1e2b'});
+  const stubDevice = new TuyAPI({id: '16537702cc50e3ede3e2',
+                                 key: '04dd213671a8e074'});
 
   const thisStub = clone(stub);
   thisStub.startServer();
@@ -109,8 +109,8 @@ test.serial('find throws timeout error', async t => {
 });
 
 test.serial('find with option all', async t => {
-  const stubDevice = new TuyAPI({id: '22325186db4a2217dc8e',
-                                 key: '4226aa407d5c1e2b'});
+  const stubDevice = new TuyAPI({id: '16537702cc50e3ede3e2',
+                                 key: '04dd213671a8e074'});
   const thisStub = clone(stub);
   thisStub.startServer();
 
