@@ -8,38 +8,48 @@ from scipy.signal import spectrogram
 from matplotlib import pyplot as plt
 from collections import deque
 
-def int_to_hex(nr):
-  h = format(int(nr), 'x')
-  return '0' + h if len(h) % 2 else h
 
-def calculate_hls(cur_segment,fs,nperseg):
+def int_to_hex(nr):
+    h = format(int(nr), 'x')
+    return '0' + h if len(h) % 2 else h
+
+
+def calculate_hls(cur_segment, fs, nperseg):
     f, t, Sxx = spectrogram(cur_segment, fs=fs, nperseg=nperseg)
-    calculated_hue = logarithmic_mapping(Sxx,f)
+    calculated_hue = logarithmic_mapping(Sxx, f)
     hue_deque.appendleft(calculated_hue)
 
-    rms = np.mean(np.abs(cur_segment))
-    alpha = rms / 8 if rms / 8 < 1000 else 1000
+    rms = np.sqrt(np.mean(np.array(cur_segment, dtype=np.float) ** 2))
+    alpha = rms / ALPHA_MAX * 1000
     alpha_deque.appendleft(alpha)
 
-    hue_hex = int_to_hex(int(np.mean(hue_deque))).zfill(4)
-    alpha_hex = int_to_hex(int(np.mean(alpha_deque))).zfill(4)
-    saturation_hex = int_to_hex(1000).zfill(4)
-    message = hue_hex + saturation_hex  + alpha_hex
+    try:
+        hue_hex = int_to_hex(int(np.mean(hue_deque))).zfill(4)
+        alpha_hex = int_to_hex(int(np.mean(alpha_deque))).zfill(4)
+        saturation_hex = int_to_hex(1000).zfill(4)
+        message = hue_hex + saturation_hex + alpha_hex
 
-    print(f"hue: {calculated_hue}, hue mean: {int(np.mean(hue_deque))} alpha: {alpha} alpha mean: {int(np.mean(alpha_deque))}")
+        print(
+            f"hue: {calculated_hue}, hue mean: {int(np.mean(hue_deque))} alpha: {alpha} alpha mean: {int(np.mean(alpha_deque))}")
+
+    except:
+        print("Value error")
+        message = ""
 
     return message
 
-def logarithmic_mapping(Sxx,f):
+
+def logarithmic_mapping(Sxx, f):
     dominant_freq = f[np.argmax(Sxx)]
-    log_f = np.logspace(start=np.log10(40), stop=np.log10(RATE/2), num=NUM_COLORS)
-    log_hue = closest_freq(log_f,dominant_freq)
+    log_f = np.logspace(start=np.log10(40), stop=np.log10(RATE / 2), num=NUM_COLORS)
+    log_hue = closest_freq(log_f, dominant_freq)
     return NUM_COLORS - log_hue
 
 
 def closest_freq(freq_array, K):
     idx = (np.abs(freq_array - K)).argmin()
     return idx
+
 
 async def send_color(websocket, path):
     print("sending data...")
@@ -59,10 +69,12 @@ def read_audio():
 # Setup channel info
 FORMAT = pyaudio.paInt16  # data type format
 CHANNELS = 1  # Adjust to your number of channels
-RATE = 44100 # Sample Rate
-CHUNK = 256 # Block Size
-NUM_COLORS =  120 # range from 0 to NUM_COLORS
+RATE = 44100  # Sample Rate
+CHUNK = 256  # Block Size
+NUM_COLORS = 120  # range from 0 to NUM_COLORS
 DEQUE_MAXLEN = 8
+ALPHA_MAX = 32768
+ALPHA_MIN = 0
 
 # Startup pyaudio instance
 audio = pyaudio.PyAudio()
@@ -75,7 +87,7 @@ stream = audio.open(format=FORMAT, channels=CHANNELS,
 print(f"latency: {stream.get_input_latency()}")
 
 hue_deque = deque([0 for _ in range(DEQUE_MAXLEN)], maxlen=DEQUE_MAXLEN)
-alpha_deque = deque([0 for _ in range(DEQUE_MAXLEN)], maxlen=DEQUE_MAXLEN)
+alpha_deque = deque([0 for _ in range(DEQUE_MAXLEN)], maxlen=DEQUE_MAXLEN * 3)
 
 start_server = websockets.serve(send_color, "localhost", 5000)
 # start_server = websockets.serve(timing, "localhost", 5000)
